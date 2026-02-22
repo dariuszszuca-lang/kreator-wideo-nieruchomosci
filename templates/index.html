@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kreator Wideo Nieruchomości</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0a0f1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 20px 20px;
+      border-bottom: 1px solid rgba(212,175,55,0.15);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #D4AF37;
+      letter-spacing: 3px;
+    }
+
+    .header p {
+      color: rgba(255,255,255,0.5);
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    /* --- TEMPLATE CARDS --- */
+    .templates {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .template-card {
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .template-card:hover {
+      border-color: rgba(212,175,55,0.3);
+      background: rgba(212,175,55,0.05);
+    }
+
+    .template-card.active {
+      border-color: #D4AF37;
+      background: rgba(212,175,55,0.1);
+      box-shadow: 0 0 20px rgba(212,175,55,0.15);
+    }
+
+    .template-card .icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .template-card .name {
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .template-card .desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .template-card .format {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      background: rgba(212,175,55,0.12);
+      color: #D4AF37;
+      font-weight: 600;
+    }
+
+    /* --- FORM --- */
+    .form-section {
+      margin-bottom: 24px;
+    }
+
+    .form-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #D4AF37;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(212,175,55,0.15);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: white;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #D4AF37;
+    }
+
+    input::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* --- FEATURES TAGS --- */
+    .features-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .feature-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(212,175,55,0.1);
+      border: 1px solid rgba(212,175,55,0.3);
+      border-radius: 20px;
+      color: #D4AF37;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .feature-tag .remove {
+      cursor: pointer;
+      opacity: 0.5;
+      font-size: 16px;
+    }
+
+    .feature-tag .remove:hover { opacity: 1; }
+
+    .add-feature {
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-feature input {
+      flex: 1;
+    }
+
+    .add-feature button {
+      padding: 10px 18px;
+      background: rgba(212,175,55,0.15);
+      border: 1px solid rgba(212,175,55,0.3);
+      border-radius: 8px;
+      color: #D4AF37;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    /* --- PHOTO UPLOAD --- */
+    .dropzone {
+      border: 2px dashed rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: #D4AF37;
+      background: rgba(212,175,55,0.05);
+    }
+
+    .dropzone .icon { font-size: 36px; margin-bottom: 10px; }
+    .dropzone .text { color: rgba(255,255,255,0.5); font-size: 14px; }
+    .dropzone .text strong { color: #D4AF37; }
+
+    .photo-previews {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .photo-preview {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-preview .remove-photo {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo-preview .photo-label-input {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 4px 6px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      color: white;
+      font-size: 11px;
+      text-align: center;
+      font-family: inherit;
+    }
+
+    .photo-preview .photo-label-input::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* --- GENERATE BUTTON --- */
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #D4AF37, #F5E6A3);
+      border: none;
+      border-radius: 12px;
+      color: #0a0f1a;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.2s;
+      margin-top: 20px;
+    }
+
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(212,175,55,0.3);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* --- STATUS --- */
+    .status {
+      text-align: center;
+      padding: 30px;
+      display: none;
+    }
+
+    .status.visible { display: block; }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(212,175,55,0.2);
+      border-top: 4px solid #D4AF37;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status .message {
+      color: rgba(255,255,255,0.6);
+      font-size: 15px;
+    }
+
+    /* --- RESULT --- */
+    .result {
+      text-align: center;
+      padding: 30px;
+      background: rgba(212,175,55,0.05);
+      border: 1px solid rgba(212,175,55,0.2);
+      border-radius: 12px;
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result.visible { display: block; }
+
+    .result .success-icon { font-size: 48px; margin-bottom: 12px; }
+
+    .result .success-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .download-btn {
+      display: inline-block;
+      padding: 12px 32px;
+      background: #D4AF37;
+      color: #0a0f1a;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .download-btn:hover {
+      background: #F5E6A3;
+      transform: translateY(-1px);
+    }
+
+    .error-msg {
+      color: #ff6b6b;
+      background: rgba(255,107,107,0.1);
+      border: 1px solid rgba(255,107,107,0.2);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error-msg.visible { display: block; }
+
+    @media (max-width: 600px) {
+      .templates { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .photo-previews { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>KREATOR WIDEO</h1>
+  <p>Wpisz dane oferty, wrzuc zdjecia, wybierz szablon — gotowe!</p>
+</div>
+
+<div class="container">
+
+  <!-- TEMPLATE SELECTION -->
+  <div class="templates">
+    <div class="template-card active" data-template="reel" onclick="selectTemplate('reel')">
+      <div class="icon">🎬</div>
+      <div class="name">Rolka ofertowa</div>
+      <div class="desc">Wideo z intro, zdjeciami i CTA</div>
+      <div class="format">9:16 MP4</div>
+    </div>
+    <div class="template-card" data-template="carousel" onclick="selectTemplate('carousel')">
+      <div class="icon">📸</div>
+      <div class="name">Karuzela</div>
+      <div class="desc">Slajdy na Instagram (PNG)</div>
+      <div class="format">1:1 PNG x5</div>
+    </div>
+    <div class="template-card" data-template="sold" onclick="selectTemplate('sold')">
+      <div class="icon">🏆</div>
+      <div class="name">Sprzedane!</div>
+      <div class="desc">Krotkie wideo celebrujace</div>
+      <div class="format">1:1 MP4</div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <form id="kreatorForm" onsubmit="return false;">
+
+    <!-- DANE OFERTY -->
+    <div class="form-section">
+      <h3>Dane oferty</h3>
+      <div class="form-row full">
+        <div>
+          <label>Tytul oferty</label>
+          <input type="text" id="title" placeholder="np. Apartament z widokiem na morze" value="Apartament z widokiem na morze">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Lokalizacja</label>
+          <input type="text" id="location" placeholder="np. Sopot, ul. Monte Cassino 15" value="Sopot, ul. Monte Cassino 15">
+        </div>
+        <div>
+          <label>Cena</label>
+          <input type="text" id="price" placeholder="np. 1 850 000 PLN" value="1 850 000 PLN">
+        </div>
+      </div>
+
+      <div class="form-row" id="detailsRow">
+        <div>
+          <label>Powierzchnia</label>
+          <input type="text" id="area" placeholder="np. 95 m2" value="95 m2">
+        </div>
+        <div>
+          <label>Pokoje</label>
+          <input type="text" id="rooms" placeholder="np. 4 pokoje" value="4 pokoje">
+        </div>
+      </div>
+      <div class="form-row" id="detailsRow2">
+        <div>
+          <label>Pietro</label>
+          <input type="text" id="floor" placeholder="np. 3 pietro" value="3 pietro">
+        </div>
+        <div>
+          <label>Rok budowy</label>
+          <input type="text" id="year" placeholder="np. 2023" value="2023">
+        </div>
+      </div>
+    </div>
+
+    <!-- CECHY -->
+    <div class="form-section" id="featuresSection">
+      <h3>Cechy oferty</h3>
+      <div class="add-feature">
+        <input type="text" id="featureInput" placeholder="np. Taras 20m2" onkeydown="if(event.key==='Enter'){event.preventDefault();addFeature()}">
+        <button type="button" onclick="addFeature()">+ Dodaj</button>
+      </div>
+      <div class="features-container" id="featuresList">
+        <div class="feature-tag" data-feature="Taras 20m2">Taras 20m2 <span class="remove" onclick="removeFeature(this)">&times;</span></div>
+        <div class="feature-tag" data-feature="Garaz podziemny">Garaz podziemny <span class="remove" onclick="removeFeature(this)">&times;</span></div>
+        <div class="feature-tag" data-feature="Klimatyzacja">Klimatyzacja <span class="remove" onclick="removeFeature(this)">&times;</span></div>
+      </div>
+    </div>
+
+    <!-- DANE AGENTA -->
+    <div class="form-section">
+      <h3>Dane agenta</h3>
+      <div class="form-row">
+        <div>
+          <label>Imie i nazwisko</label>
+          <input type="text" id="agent" placeholder="np. Jan Kowalski">
+        </div>
+        <div>
+          <label>Telefon</label>
+          <input type="text" id="agentPhone" placeholder="np. +48 500 100 200">
+        </div>
+      </div>
+    </div>
+
+    <!-- ZDJECIA -->
+    <div class="form-section">
+      <h3>Zdjecia</h3>
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <div class="icon">📷</div>
+        <div class="text">Przeciagnij zdjecia lub <strong>kliknij tutaj</strong></div>
+        <div class="text" style="margin-top:4px;font-size:12px">JPG / PNG, max 5 zdjec</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+      <div class="photo-previews" id="photoPreviews"></div>
+    </div>
+
+    <!-- GENERATE -->
+    <button type="button" class="generate-btn" id="generateBtn" onclick="generate()">
+      GENERUJ
+    </button>
+  </form>
+
+  <!-- STATUS -->
+  <div class="status" id="status">
+    <div class="spinner"></div>
+    <div class="message" id="statusMessage">Renderowanie... to moze potrwac 30-60 sekund</div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result" id="result">
+    <div class="success-icon">✅</div>
+    <div class="success-text" id="resultText">Gotowe!</div>
+    <a class="download-btn" id="downloadLink" href="#" download>POBIERZ</a>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-msg" id="errorMsg"></div>
+
+</div>
+
+<script>
+  let currentTemplate = 'reel';
+  let uploadedPhotos = [];
+  let sessionId = Math.random().toString(36).substring(2, 10);
+
+  // --- TEMPLATE SELECTION ---
+  function selectTemplate(template) {
+    currentTemplate = template;
+    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-template="${template}"]`).classList.add('active');
+
+    // Show/hide details fields
+    const showDetails = template !== 'sold';
+    document.getElementById('detailsRow').style.display = showDetails ? 'grid' : 'none';
+    document.getElementById('detailsRow2').style.display = showDetails ? 'grid' : 'none';
+    document.getElementById('featuresSection').style.display = showDetails ? 'block' : 'none';
+  }
+
+  // --- FEATURES ---
+  function addFeature() {
+    const input = document.getElementById('featureInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const container = document.getElementById('featuresList');
+    const tag = document.createElement('div');
+    tag.className = 'feature-tag';
+    tag.dataset.feature = text;
+    tag.innerHTML = `${text} <span class="remove" onclick="removeFeature(this)">&times;</span>`;
+    container.appendChild(tag);
+    input.value = '';
+    input.focus();
+  }
+
+  function removeFeature(el) {
+    el.parentElement.remove();
+  }
+
+  function getFeatures() {
+    return Array.from(document.querySelectorAll('.feature-tag'))
+      .map(t => t.dataset.feature);
+  }
+
+  // --- PHOTO UPLOAD ---
+  const dropzone = document.getElementById('dropzone');
+
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  function handleFiles(files) {
+    const maxPhotos = 5;
+    const remaining = maxPhotos - uploadedPhotos.length;
+    const toAdd = Array.from(files).slice(0, remaining);
+
+    if (toAdd.length === 0) return;
+
+    // Upload to server
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    toAdd.forEach((f, i) => formData.append(`photo_${i}`, f));
+
+    fetch('/upload', { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        data.files.forEach((file, i) => {
+          uploadedPhotos.push({
+            path: file.path,
+            name: file.name,
+            label: '',
+            localUrl: URL.createObjectURL(toAdd[i]),
+          });
+        });
+        renderPreviews();
+      })
+      .catch(err => showError('Blad uploadu: ' + err.message));
+  }
+
+  function renderPreviews() {
+    const container = document.getElementById('photoPreviews');
+    container.innerHTML = '';
+
+    uploadedPhotos.forEach((photo, i) => {
+      const div = document.createElement('div');
+      div.className = 'photo-preview';
+      div.innerHTML = `
+        <img src="${photo.localUrl}" alt="${photo.name}">
+        <button class="remove-photo" onclick="removePhoto(${i})">&times;</button>
+        <input class="photo-label-input" placeholder="Opis..."
+          value="${photo.label}"
+          onchange="uploadedPhotos[${i}].label = this.value">
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function removePhoto(index) {
+    uploadedPhotos.splice(index, 1);
+    renderPreviews();
+  }
+
+  // --- GENERATE ---
+  async function generate() {
+    if (uploadedPhotos.length === 0) {
+      showError('Dodaj przynajmniej 1 zdjecie!');
+      return;
+    }
+
+    const data = {
+      template: currentTemplate,
+      title: document.getElementById('title').value,
+      location: document.getElementById('location').value,
+      price: document.getElementById('price').value,
+      area: document.getElementById('area').value,
+      rooms: document.getElementById('rooms').value,
+      floor: document.getElementById('floor').value,
+      year: document.getElementById('year').value,
+      features: getFeatures(),
+      agent: document.getElementById('agent').value,
+      agentPhone: document.getElementById('agentPhone').value,
+      photos: uploadedPhotos.map(p => ({
+        path: p.path,
+        label: p.label || p.name.replace(/\.[^.]+$/, ''),
+      })),
+    };
+
+    // UI state
+    hideError();
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('status').classList.add('visible');
+    document.getElementById('result').classList.remove('visible');
+
+    const msgs = [
+      'Renderowanie... to moze potrwac 30-60 sekund',
+      'Przygotowywanie scen...',
+      'Generowanie animacji...',
+      'Prawie gotowe...',
+    ];
+    let msgIdx = 0;
+    const msgInterval = setInterval(() => {
+      msgIdx = Math.min(msgIdx + 1, msgs.length - 1);
+      document.getElementById('statusMessage').textContent = msgs[msgIdx];
+    }, 15000);
+
+    try {
+      const resp = await fetch('/render', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await resp.json();
+      clearInterval(msgInterval);
+
+      if (!resp.ok || result.error) {
+        throw new Error(result.error || 'Nieznany blad');
+      }
+
+      // Show result
+      document.getElementById('status').classList.remove('visible');
+      document.getElementById('result').classList.add('visible');
+
+      const typeText = result.type === 'carousel'
+        ? `Karuzela gotowa! (${result.slide_count} slajdow)`
+        : 'Wideo gotowe!';
+      document.getElementById('resultText').textContent = typeText;
+
+      const link = document.getElementById('downloadLink');
+      link.href = result.download_url;
+      link.download = result.filename;
+      link.textContent = result.type === 'carousel' ? 'POBIERZ ZIP' : 'POBIERZ MP4';
+
+    } catch (err) {
+      clearInterval(msgInterval);
+      document.getElementById('status').classList.remove('visible');
+      showError(err.message);
+    } finally {
+      document.getElementById('generateBtn').disabled = false;
+    }
+  }
+
+  // --- HELPERS ---
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function hideError() {
+    document.getElementById('errorMsg').classList.remove('visible');
+  }
+</script>
+
+</body>
+</html>
