@@ -346,8 +346,9 @@ def cleanup():
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5558))
     print("=" * 50)
     print("  KREATOR WIDEO NIERUCHOMOSCI")
-    print("  http://localhost:5558")
+    print(f"  http://localhost:{port}")
     print("=" * 50)
-    app.run(host="0.0.0.0", port=5558, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
