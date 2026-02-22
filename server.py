@@ -379,14 +379,35 @@ def scrape_otodom():
         return jsonify({"error": "Podaj prawidlowy link z Otodom.pl"}), 400
 
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "pl-PL,pl;q=0.9,en;q=0.8",
-        }
+        session = req.Session()
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"macOS"',
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
+            "Referer": "https://www.google.com/",
+        })
 
-        resp = req.get(url, headers=headers, timeout=15)
-        resp.raise_for_status()
+        # First hit homepage to get cookies
+        session.get("https://www.otodom.pl/", timeout=10)
+
+        resp = session.get(url, timeout=15)
+
+        # 403/5xx = blocked, but 410 (expired listing) still has data
+        if resp.status_code == 403:
+            return jsonify({"error": "Otodom zablokował zapytanie (403). Sprobuj ponownie za chwile."}), 500
+        if resp.status_code >= 500:
+            return jsonify({"error": f"Otodom zwrocil blad serwera ({resp.status_code})."}), 500
 
         soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -415,7 +436,7 @@ def scrape_otodom():
         photo_paths = []
         for i, photo_url in enumerate(result.get("photo_urls", [])[:5]):
             try:
-                photo_resp = req.get(photo_url, headers=headers, timeout=10)
+                photo_resp = session.get(photo_url, timeout=10)
                 photo_resp.raise_for_status()
                 ext = ".jpg"
                 photo_name = f"otodom_{i+1}{ext}"
