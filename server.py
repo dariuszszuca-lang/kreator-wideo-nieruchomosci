@@ -18,6 +18,12 @@ try:
 except ImportError:
     HAS_SCRAPING = False
 
+try:
+    from curl_cffi import requests as curl_requests
+    HAS_CURL_CFFI = True
+except ImportError:
+    HAS_CURL_CFFI = False
+
 app = Flask(__name__)
 
 BASE_DIR = Path(__file__).parent
@@ -104,6 +110,8 @@ def render_video():
             return render_carousel(data, render_id)
         elif template == "sold":
             return render_sold(data, render_id)
+        elif template == "plot":
+            return render_plot(data, render_id)
         else:
             return jsonify({"error": f"Nieznany szablon: {template}"}), 400
     except subprocess.CalledProcessError as e:
@@ -143,6 +151,12 @@ def render_reel(data, render_id):
     }
     if brand:
         props["brand"] = brand
+
+    # Music
+    if data.get("musicPath"):
+        props["musicSrc"] = data["musicPath"]
+    if data.get("musicVolume"):
+        props["musicVolume"] = int(data["musicVolume"]) / 100
 
     # Video effects from description
     desc = data.get("effectsDescription", "")
@@ -294,6 +308,12 @@ def render_sold(data, render_id):
     if brand:
         props["brand"] = brand
 
+    # Music
+    if data.get("musicPath"):
+        props["musicSrc"] = data["musicPath"]
+    if data.get("musicVolume"):
+        props["musicVolume"] = int(data["musicVolume"]) / 100
+
     # Video effects from description
     desc = data.get("effectsDescription", "")
     effects = parse_effects_description(desc) if desc else data.get("effects", {})
@@ -313,6 +333,43 @@ def render_sold(data, render_id):
         "type": "video",
         "download_url": f"/download/{render_id}-sprzedane.mp4",
         "filename": f"sprzedane-{render_id}.mp4",
+    })
+
+
+def render_plot(data, render_id):
+    """Renderuj wideo 'Działka → Dom' (PlotBuild)"""
+    props = {
+        "config": {
+            "plotImage": data.get("plotImage", ""),
+            "wireframeImage": data.get("wireframeImage", ""),
+            "renderImage": data.get("renderImage", ""),
+            "ctaImage": data.get("ctaImage", ""),
+            "area": data.get("area", ""),
+            "ctaText": data.get("ctaText", "KUP TĄ DZIAŁKĘ I WYBUDUJ DOM MARZEŃ"),
+            "agentName": data.get("agent", ""),
+            "agentPhone": data.get("agentPhone", ""),
+        }
+    }
+
+    # Music
+    if data.get("musicPath"):
+        props["musicSrc"] = data["musicPath"]
+    if data.get("musicVolume"):
+        props["musicVolume"] = int(data["musicVolume"]) / 100
+
+    props_file = OUT_DIR / f"{render_id}-props.json"
+    props_file.write_text(json.dumps(props, ensure_ascii=False))
+
+    output_file = OUT_DIR / f"{render_id}-dzialka.mp4"
+    run_remotion("render", "PlotBuild", str(output_file), str(props_file))
+
+    props_file.unlink(missing_ok=True)
+
+    return jsonify({
+        "success": True,
+        "type": "video",
+        "download_url": f"/download/{render_id}-dzialka.mp4",
+        "filename": f"dzialka-{render_id}.mp4",
     })
 
 
@@ -365,6 +422,25 @@ def serve_upload(filename):
     return send_file(str(file_path))
 
 
+@app.route("/upload-music", methods=["POST"])
+def upload_music():
+    """Upload muzyki w tle"""
+    session_id = request.form.get("session_id", str(uuid.uuid4())[:8])
+    session_dir = UPLOADS_DIR / session_id
+    session_dir.mkdir(parents=True, exist_ok=True)
+
+    f = request.files.get("music")
+    if not f or not f.filename:
+        return jsonify({"error": "Brak pliku muzyki"}), 400
+
+    safe_name = "music_" + f.filename.replace(" ", "_")
+    save_path = session_dir / safe_name
+    f.save(str(save_path))
+    rel_path = f"uploads/{session_id}/{safe_name}"
+
+    return jsonify({"session_id": session_id, "musicPath": rel_path})
+
+
 @app.route("/scrape-otodom", methods=["POST"])
 def scrape_otodom():
     """Scrape danych oferty z Otodom URL"""
@@ -379,24 +455,28 @@ def scrape_otodom():
         return jsonify({"error": "Podaj prawidlowy link z Otodom.pl"}), 400
 
     try:
-        session = req.Session()
-        session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-            "Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"macOS"',
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-User": "?1",
-            "Upgrade-Insecure-Requests": "1",
-            "Referer": "https://www.google.com/",
-        })
+        if HAS_CURL_CFFI:
+            # curl_cffi impersonates Chrome TLS fingerprint — bypasses DataDome/bot detection
+            session = curl_requests.Session(impersonate="chrome")
+        else:
+            session = req.Session()
+            session.headers.update({
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                "Accept-Language": "pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache",
+                "Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                "Sec-Ch-Ua-Mobile": "?0",
+                "Sec-Ch-Ua-Platform": '"macOS"',
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Sec-Fetch-User": "?1",
+                "Upgrade-Insecure-Requests": "1",
+                "Referer": "https://www.google.com/",
+            })
 
         # First hit homepage to get cookies
         session.get("https://www.otodom.pl/", timeout=10)

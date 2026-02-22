@@ -18,6 +18,7 @@ import {
   DEFAULT_EFFECTS,
 } from "./styles";
 import { LogoOverlay } from "./LogoOverlay";
+import { AudioTrack } from "./AudioTrack";
 
 type Listing = {
   title: string;
@@ -37,6 +38,8 @@ type Props = {
   listing: Listing;
   brand?: Partial<BrandConfig>;
   effects?: Partial<EffectsConfig>;
+  musicSrc?: string;
+  musicVolume?: number;
 };
 
 // --- INTRO SCENE ---
@@ -647,6 +650,8 @@ export const RealEstateVideo: React.FC<Props> = ({
   listing,
   brand,
   effects,
+  musicSrc,
+  musicVolume,
 }) => {
   const e = { ...DEFAULT_EFFECTS, ...effects };
   const t = getTempoFrames(e.tempo);
@@ -664,6 +669,7 @@ export const RealEstateVideo: React.FC<Props> = ({
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      <AudioTrack src={musicSrc} volume={musicVolume} />
       <Sequence from={cursor} durationInFrames={t.intro}>
         <IntroScene
           listing={listing}

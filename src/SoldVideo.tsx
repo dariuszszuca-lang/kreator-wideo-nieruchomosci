@@ -5,6 +5,7 @@ import {
 } from "remotion";
 import { getStyle, type BrandConfig, DEFAULT_BRAND } from "./styles";
 import { LogoOverlay } from "./LogoOverlay";
+import { AudioTrack } from "./AudioTrack";
 
 export type SoldProps = {
   title: string;
@@ -14,6 +15,8 @@ export type SoldProps = {
   agentPhone: string;
   photoSrc: string;
   brand?: Partial<BrandConfig>;
+  musicSrc?: string;
+  musicVolume?: number;
 };
 
 // --- SCENE 1: Photo with zoom (90 frames = 3s) ---
@@ -124,6 +127,7 @@ const ThankYouScene: React.FC<SoldProps> = (props) => {
 export const SoldVideo: React.FC<SoldProps> = (props) => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      <AudioTrack src={props.musicSrc} volume={props.musicVolume} />
       <Sequence from={0} durationInFrames={90}><PhotoScene {...props} /></Sequence>
       <Sequence from={90} durationInFrames={90}><SoldScene brand={props.brand} /></Sequence>
       <Sequence from={180} durationInFrames={60}><ThankYouScene {...props} /></Sequence>

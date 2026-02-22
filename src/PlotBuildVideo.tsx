@@ -9,6 +9,7 @@ import {
   spring,
   staticFile,
 } from "remotion";
+import { AudioTrack } from "./AudioTrack";
 
 // --- CONFIG ---
 type PlotConfig = {
@@ -489,9 +490,10 @@ const CTAScene: React.FC<{
 // Total: 510 frames = 17s at 30fps
 // Plot: 0-59 (2s) | Boundary: 60-149 (3s) | Area: 150-209 (2s) |
 // Wireframe: 210-329 (4s) | Materialize: 330-419 (3s) | CTA: 420-509 (3s)
-export const PlotBuildVideo: React.FC<{ config: PlotConfig }> = ({ config }) => {
+export const PlotBuildVideo: React.FC<{ config: PlotConfig; musicSrc?: string; musicVolume?: number }> = ({ config, musicSrc, musicVolume }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      <AudioTrack src={musicSrc} volume={musicVolume} />
       {/* Scene 1: Empty plot */}
       <Sequence from={0} durationInFrames={60}>
         <PlotScene plotImage={config.plotImage} />
