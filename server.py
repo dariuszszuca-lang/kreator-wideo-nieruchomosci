@@ -384,12 +384,15 @@ def run_remotion(mode, composition, output, props_file):
 
     if mode == "still":
         cmd.extend(["--frame", "0"])
+    else:
+        # Optymalizacja dla slabych serwerow (Render free tier)
+        cmd.extend(["--concurrency", "1", "--gl", "angle"])
 
     result = subprocess.run(
         cmd,
         cwd=str(BASE_DIR),
         capture_output=True,
-        timeout=300,  # 5 min max
+        timeout=600,  # 10 min max
     )
 
     if result.returncode != 0:
