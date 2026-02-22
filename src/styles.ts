@@ -83,3 +83,34 @@ export const DEFAULT_BRAND: BrandConfig = {
   ctaSubtext: "ZAINTERESOWANY?",
   stylePreset: "luksusowy",
 };
+
+// --- Efekty wideo ---
+export type EffectsConfig = {
+  tempo: "fast" | "normal" | "slow";
+  textPosition: "top" | "center" | "bottom";
+  transition: "slide" | "fade" | "zoom";
+  overlay: "dark" | "light" | "none" | "cinematic" | "gradient";
+};
+
+export const DEFAULT_EFFECTS: EffectsConfig = {
+  tempo: "normal",
+  textPosition: "center",
+  transition: "slide",
+  overlay: "dark",
+};
+
+export function getTempoFrames(tempo: string) {
+  switch (tempo) {
+    case "fast":
+      return { intro: 55, photo: 36, details: 55, outro: 55 };
+    case "slow":
+      return { intro: 120, photo: 80, details: 120, outro: 120 };
+    default:
+      return { intro: 90, photo: 60, details: 90, outro: 90 };
+  }
+}
+
+export function getTotalFrames(tempo: string, photoCount = 5) {
+  const t = getTempoFrames(tempo);
+  return t.intro + photoCount * t.photo + t.details + t.outro;
+}

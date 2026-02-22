@@ -3,6 +3,7 @@ import { RealEstateVideo } from "./RealEstateVideo";
 import { PlotBuildVideo } from "./PlotBuildVideo";
 import { CarouselSlide } from "./CarouselSlide";
 import { SoldVideo } from "./SoldVideo";
+import { getTotalFrames } from "./styles";
 
 // --- Default props dla demo/preview ---
 const LISTING = {
@@ -66,11 +67,15 @@ const SOLD_DEFAULT = {
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      {/* Rolka ofertowa 9:16 (19s) */}
+      {/* Rolka ofertowa 9:16 (dynamic duration based on tempo) */}
       <Composition
         id="RealEstateReel"
         component={RealEstateVideo}
-        durationInFrames={570}
+        calculateMetadata={async ({ props }) => {
+          const tempo = props.effects?.tempo || "normal";
+          const photoCount = props.listing?.photos?.length || 5;
+          return { durationInFrames: getTotalFrames(tempo, photoCount) };
+        }}
         fps={30}
         width={1080}
         height={1920}

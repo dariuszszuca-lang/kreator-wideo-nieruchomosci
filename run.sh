@@ -8,8 +8,8 @@ if [ ! -d "node_modules" ]; then
   npm install
 fi
 
-# Sprawdz Flask
-pip3 install -q flask 2>/dev/null
+# Sprawdz Python dependencies
+pip3 install -q -r requirements.txt 2>/dev/null
 
 echo ""
 echo "=================================================="

@@ -3,113 +3,399 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kreator Wideo Nieruchomości</title>
+  <title>Kreator Wideo — RealTools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0a0f1a;
-      color: #e0e0e0;
-      min-height: 100vh;
+    /* === VARIABLES === */
+    :root {
+      --bg: #0b1120;
+      --bg-mesh-1: #0f1629;
+      --bg-mesh-2: #111833;
+      --surface: #151d30;
+      --surface-hover: #1a2540;
+      --surface-active: #1e2d4a;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99,102,241,0.15);
+      --accent-subtle: rgba(99,102,241,0.08);
+      --text: #f1f5f9;
+      --text-2: #94a3b8;
+      --text-3: #64748b;
+      --green: #22c55e;
+      --green-glow: rgba(34,197,94,0.15);
+      --red: #ef4444;
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.12);
+      --glass: rgba(255,255,255,0.03);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --radius-sm: 8px;
     }
 
+    /* === RESET & BASE === */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,102,241,0.08), transparent),
+        radial-gradient(circle at 80% 80%, rgba(99,102,241,0.04), transparent);
+    }
+
+    /* Dot grid pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* === LAYOUT === */
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* === HEADER === */
     .header {
       text-align: center;
-      padding: 40px 20px 20px;
-      border-bottom: 1px solid rgba(212,175,55,0.15);
+      padding: 48px 0 32px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: var(--accent-subtle);
+      border: 1px solid rgba(99,102,241,0.15);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-light);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .header-badge svg {
+      width: 14px;
+      height: 14px;
     }
 
     .header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      color: #D4AF37;
-      letter-spacing: 3px;
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
     }
 
     .header p {
-      color: rgba(255,255,255,0.5);
+      color: var(--text-3);
       margin-top: 8px;
       font-size: 14px;
+      font-weight: 400;
     }
 
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 30px 20px;
+    /* === PROGRESS BAR === */
+    .progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 36px;
+      padding: 0 20px;
     }
 
-    /* --- TEMPLATE CARDS --- */
-    .templates {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 30px;
-    }
-
-    .template-card {
-      background: rgba(255,255,255,0.04);
-      border: 2px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 24px 16px;
-      text-align: center;
+    .progress-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: opacity 0.3s;
     }
 
-    .template-card:hover {
-      border-color: rgba(212,175,55,0.3);
-      background: rgba(212,175,55,0.05);
-    }
+    .progress-step.disabled { pointer-events: none; }
 
-    .template-card.active {
-      border-color: #D4AF37;
-      background: rgba(212,175,55,0.1);
-      box-shadow: 0 0 20px rgba(212,175,55,0.15);
-    }
-
-    .template-card .icon {
-      font-size: 40px;
-      margin-bottom: 12px;
-    }
-
-    .template-card .name {
-      font-size: 16px;
+    .progress-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
       font-weight: 700;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      color: var(--text-3);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .progress-step.active .progress-num {
+      background: var(--accent);
+      border-color: var(--accent);
       color: white;
-      margin-bottom: 6px;
+      box-shadow: 0 0 20px var(--accent-glow);
     }
 
-    .template-card .desc {
+    .progress-step.completed .progress-num {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .progress-step .progress-num svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .progress-label {
       font-size: 12px;
-      color: rgba(255,255,255,0.45);
-    }
-
-    .template-card .format {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      background: rgba(212,175,55,0.12);
-      color: #D4AF37;
       font-weight: 600;
+      color: var(--text-3);
+      transition: color 0.3s;
+      white-space: nowrap;
     }
 
-    /* --- FORM --- */
-    .form-section {
+    .progress-step.active .progress-label { color: var(--text); }
+    .progress-step.completed .progress-label { color: var(--text-2); }
+
+    .progress-line {
+      width: 40px;
+      height: 2px;
+      background: var(--border);
+      margin: 0 8px;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .progress-line.filled { background: var(--green); }
+
+    /* === STEPS === */
+    .step {
+      display: none;
+      animation: stepIn 0.35s ease;
+    }
+
+    .step.active { display: block; }
+
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-3);
       margin-bottom: 24px;
     }
 
-    .form-section h3 {
-      font-size: 14px;
+    /* === TEMPLATE CARDS === */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .tpl-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 16px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tpl-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent-glow), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .tpl-card:hover {
+      border-color: var(--border-hover);
+      background: var(--surface-hover);
+      transform: translateY(-2px);
+    }
+
+    .tpl-card:hover::before { opacity: 1; }
+
+    .tpl-card.active {
+      border-color: var(--accent);
+      background: var(--surface-active);
+      box-shadow: 0 0 30px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .tpl-card.active::before { opacity: 1; }
+
+    .tpl-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 14px;
+      border-radius: var(--radius);
+      background: var(--accent-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tpl-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--accent-light);
+    }
+
+    .tpl-card.active .tpl-icon {
+      background: var(--accent);
+    }
+
+    .tpl-card.active .tpl-icon svg { stroke: white; }
+
+    .tpl-name {
+      font-size: 15px;
       font-weight: 700;
-      color: #D4AF37;
-      letter-spacing: 2px;
+      color: var(--text);
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tpl-desc {
+      font-size: 12px;
+      color: var(--text-3);
+      position: relative;
+      z-index: 1;
+    }
+
+    .tpl-format {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(99,102,241,0.1);
+      color: var(--accent-light);
+      letter-spacing: 0.5px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* === AUTOFILL BAR === */
+    .autofill-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .autofill-bar svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--accent-light);
+      flex-shrink: 0;
+    }
+
+    .autofill-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .autofill-bar input::placeholder { color: var(--text-3); }
+
+    .autofill-btn {
+      padding: 7px 16px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .autofill-btn:hover { background: var(--accent-light); }
+
+    .autofill-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .autofill-status {
+      font-size: 11px;
+      color: var(--green);
+      display: none;
+      white-space: nowrap;
+    }
+
+    .autofill-status.visible { display: inline; }
+
+    /* === FORM === */
+    .form-section {
+      margin-bottom: 28px;
+    }
+
+    .form-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-3);
+      letter-spacing: 1.5px;
       text-transform: uppercase;
       margin-bottom: 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(212,175,55,0.15);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
     .form-row {
@@ -119,473 +405,893 @@
       margin-bottom: 12px;
     }
 
-    .form-row.full {
-      grid-template-columns: 1fr;
-    }
+    .form-row.full { grid-template-columns: 1fr; }
+    .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
 
     label {
       display: block;
       font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 6px;
     }
 
-    input, select {
+    input[type="text"], select, textarea {
       width: 100%;
       padding: 10px 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      color: white;
-      font-size: 15px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 14px;
       font-family: inherit;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
 
-    input:focus, select:focus {
+    input[type="text"]:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: #D4AF37;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+      background: rgba(255,255,255,0.06);
     }
 
-    input::placeholder {
-      color: rgba(255,255,255,0.25);
+    input::placeholder, textarea::placeholder { color: var(--text-3); }
+
+    textarea { resize: vertical; min-height: 60px; }
+
+    /* === FEATURES === */
+    .features-wrap {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
-    /* --- FEATURES TAGS --- */
-    .features-container {
+    .features-wrap input { flex: 1; }
+
+    .features-wrap button {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .features-wrap button:hover {
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+
+    .features-wrap button svg { width: 16px; height: 16px; }
+
+    .feature-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
+      gap: 6px;
     }
 
     .feature-tag {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
-      background: rgba(212,175,55,0.1);
-      border: 1px solid rgba(212,175,55,0.3);
+      padding: 5px 12px;
+      background: var(--accent-subtle);
+      border: 1px solid rgba(99,102,241,0.2);
       border-radius: 20px;
-      color: #D4AF37;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
+      color: var(--accent-light);
     }
 
-    .feature-tag .remove {
+    .feature-tag .remove-feat {
       cursor: pointer;
       opacity: 0.5;
-      font-size: 16px;
-    }
-
-    .feature-tag .remove:hover { opacity: 1; }
-
-    .add-feature {
+      transition: opacity 0.2s;
       display: flex;
-      gap: 8px;
     }
 
-    .add-feature input {
-      flex: 1;
-    }
+    .feature-tag .remove-feat:hover { opacity: 1; }
+    .feature-tag .remove-feat svg { width: 14px; height: 14px; }
 
-    .add-feature button {
-      padding: 10px 18px;
-      background: rgba(212,175,55,0.15);
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 8px;
-      color: #D4AF37;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-
-    /* --- PHOTO UPLOAD --- */
+    /* === PHOTO UPLOAD === */
     .dropzone {
-      border: 2px dashed rgba(255,255,255,0.15);
-      border-radius: 12px;
-      padding: 40px;
+      border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: var(--radius-lg);
+      padding: 48px 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 12px;
+      transition: all 0.25s;
+      background: var(--glass);
     }
 
     .dropzone:hover, .dropzone.dragover {
-      border-color: #D4AF37;
-      background: rgba(212,175,55,0.05);
+      border-color: var(--accent);
+      background: var(--accent-subtle);
     }
 
-    .dropzone .icon { font-size: 36px; margin-bottom: 10px; }
-    .dropzone .text { color: rgba(255,255,255,0.5); font-size: 14px; }
-    .dropzone .text strong { color: #D4AF37; }
-
-    .photo-previews {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .photo-preview {
-      position: relative;
-      aspect-ratio: 1;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .photo-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .photo-preview .remove-photo {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 22px;
-      height: 22px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: none;
+    .dropzone-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
       border-radius: 50%;
-      cursor: pointer;
-      font-size: 12px;
+      background: var(--accent-subtle);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .photo-preview .photo-label-input {
+    .dropzone-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--accent-light);
+    }
+
+    .dropzone-text {
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    .dropzone-text strong { color: var(--accent-light); }
+
+    .dropzone-hint {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .photo-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-item .remove-photo {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 24px;
+      height: 24px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .photo-item:hover .remove-photo { opacity: 1; }
+
+    .photo-item .remove-photo svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+    }
+
+    .photo-item .photo-label {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
       padding: 4px 6px;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
       border: none;
       color: white;
-      font-size: 11px;
-      text-align: center;
+      font-size: 10px;
       font-family: inherit;
-    }
-
-    .photo-preview .photo-label-input::placeholder {
-      color: rgba(255,255,255,0.4);
-    }
-
-    /* --- GENERATE BUTTON --- */
-    .generate-btn {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #D4AF37, #F5E6A3);
-      border: none;
-      border-radius: 12px;
-      color: #0a0f1a;
-      font-size: 18px;
-      font-weight: 800;
-      cursor: pointer;
-      letter-spacing: 2px;
-      transition: all 0.2s;
-      margin-top: 20px;
-    }
-
-    .generate-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(212,175,55,0.3);
-    }
-
-    .generate-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    /* --- STATUS --- */
-    .status {
       text-align: center;
-      padding: 30px;
-      display: none;
     }
 
-    .status.visible { display: block; }
+    .photo-item .photo-label::placeholder { color: rgba(255,255,255,0.4); }
 
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid rgba(212,175,55,0.2);
-      border-top: 4px solid #D4AF37;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .status .message {
-      color: rgba(255,255,255,0.6);
-      font-size: 15px;
-    }
-
-    /* --- RESULT --- */
-    .result {
-      text-align: center;
-      padding: 30px;
-      background: rgba(212,175,55,0.05);
-      border: 1px solid rgba(212,175,55,0.2);
-      border-radius: 12px;
-      display: none;
-      margin-top: 20px;
-    }
-
-    .result.visible { display: block; }
-
-    .result .success-icon { font-size: 48px; margin-bottom: 12px; }
-
-    .result .success-text {
-      font-size: 18px;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 16px;
-    }
-
-    .download-btn {
-      display: inline-block;
-      padding: 12px 32px;
-      background: #D4AF37;
-      color: #0a0f1a;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 15px;
-      transition: all 0.2s;
-    }
-
-    .download-btn:hover {
-      background: #F5E6A3;
-      transform: translateY(-1px);
-    }
-
-    .error-msg {
-      color: #ff6b6b;
-      background: rgba(255,107,107,0.1);
-      border: 1px solid rgba(255,107,107,0.2);
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-top: 16px;
-      font-size: 14px;
-      display: none;
-    }
-
-    .error-msg.visible { display: block; }
-
-    /* --- STYLE PRESETS --- */
-    .style-presets {
+    /* === STYLE PRESETS === */
+    .style-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 10px;
-      margin-bottom: 12px;
     }
 
     .style-card {
-      background: rgba(255,255,255,0.04);
-      border: 2px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 14px 8px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 8px 10px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .style-card:hover {
-      border-color: rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.06);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
     }
 
     .style-card.active {
-      border-color: var(--accent, #D4AF37);
-      background: rgba(255,255,255,0.08);
-      box-shadow: 0 0 15px rgba(255,255,255,0.05);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-glow);
     }
 
-    .style-card .swatch {
-      width: 36px;
-      height: 36px;
+    .style-swatch {
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       margin: 0 auto 8px;
-      border: 2px solid rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.1);
     }
 
-    .style-card .style-name {
-      font-size: 12px;
+    .style-name {
+      font-size: 11px;
       font-weight: 600;
-      color: white;
-      text-transform: capitalize;
+      color: var(--text-2);
     }
 
-    /* --- LOGO UPLOAD --- */
-    .logo-upload-area {
+    .style-card.active .style-name { color: var(--text); }
+
+    /* === LOGO === */
+    .logo-row {
       display: flex;
       align-items: center;
       gap: 14px;
       margin-top: 8px;
     }
 
-    .logo-preview {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.15);
+    .logo-box {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
       overflow: hidden;
-      background: rgba(255,255,255,0.05);
+      background: var(--surface);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
 
-    .logo-preview img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
+    .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    .logo-preview .placeholder {
-      font-size: 24px;
-      opacity: 0.3;
-    }
+    .logo-box svg { width: 24px; height: 24px; stroke: var(--text-3); }
 
     .logo-upload-btn {
-      padding: 8px 16px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      color: rgba(255,255,255,0.7);
-      font-size: 13px;
-      cursor: pointer;
+      padding: 7px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 600;
       font-family: inherit;
+      cursor: pointer;
       transition: all 0.2s;
     }
 
-    .logo-upload-btn:hover {
-      background: rgba(255,255,255,0.12);
-      color: white;
-    }
+    .logo-upload-btn:hover { border-color: var(--accent); color: var(--accent-light); }
 
-    .logo-remove {
+    .logo-remove-btn {
       font-size: 12px;
-      color: rgba(255,107,107,0.7);
-      cursor: pointer;
+      color: var(--red);
       background: none;
       border: none;
+      cursor: pointer;
       font-family: inherit;
+      opacity: 0.7;
     }
 
-    .logo-remove:hover { color: #ff6b6b; }
+    .logo-remove-btn:hover { opacity: 1; }
 
-    textarea {
-      width: 100%;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      color: white;
+    /* === NAV BUTTONS === */
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
       font-size: 14px;
+      font-weight: 700;
       font-family: inherit;
-      transition: border-color 0.2s;
-      resize: vertical;
-      min-height: 60px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
     }
 
-    textarea:focus {
-      outline: none;
-      border-color: #D4AF37;
+    .btn svg { width: 18px; height: 18px; }
+
+    .btn-back {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-2);
     }
 
-    textarea::placeholder {
-      color: rgba(255,255,255,0.25);
+    .btn-back:hover { border-color: var(--border-hover); color: var(--text); }
+
+    .btn-next {
+      background: var(--accent);
+      color: white;
+      flex: 1;
+      justify-content: center;
     }
 
-    @media (max-width: 600px) {
-      .templates { grid-template-columns: 1fr; }
+    .btn-next:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: white;
+      flex: 1;
+      justify-content: center;
+      font-size: 16px;
+      padding: 16px 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(99,102,241,0.3);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* === LOADING === */
+    .loading-overlay {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .loading-overlay.visible { display: block; }
+
+    .loading-ring {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .loading-ring svg {
+      width: 64px;
+      height: 64px;
+      transform: rotate(-90deg);
+    }
+
+    .loading-ring circle {
+      fill: none;
+      stroke-width: 4;
+    }
+
+    .loading-ring .ring-bg { stroke: var(--border); }
+
+    .loading-ring .ring-progress {
+      stroke: var(--accent);
+      stroke-linecap: round;
+      stroke-dasharray: 175;
+      stroke-dashoffset: 175;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .loading-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .loading-stage {
+      font-size: 14px;
+      color: var(--text-2);
+      margin-bottom: 20px;
+    }
+
+    .loading-stages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 300px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .loading-stages .stage {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-3);
+      transition: color 0.3s;
+    }
+
+    .loading-stages .stage.active { color: var(--text); }
+    .loading-stages .stage.done { color: var(--green); }
+
+    .loading-stages .stage-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .loading-stages .stage.active .stage-icon {
+      background: var(--accent);
+    }
+
+    .loading-stages .stage.done .stage-icon {
+      background: var(--green);
+    }
+
+    .loading-stages .stage-icon svg {
+      width: 12px;
+      height: 12px;
+      stroke: white;
+    }
+
+    .stage-spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    /* === RESULT === */
+    .result-card {
+      display: none;
+      text-align: center;
+      padding: 48px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-top: 20px;
+    }
+
+    .result-card.visible { display: block; animation: stepIn 0.4s ease; }
+
+    .result-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      background: var(--green-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-icon svg { width: 32px; height: 32px; stroke: var(--green); }
+
+    .result-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .result-sub {
+      font-size: 14px;
+      color: var(--text-2);
+      margin-bottom: 24px;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: var(--green);
+      color: #0b1120;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-weight: 800;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--green-glow);
+    }
+
+    .download-btn svg { width: 18px; height: 18px; stroke: #0b1120; }
+
+    .btn-new {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-new:hover { border-color: var(--border-hover); color: var(--text); }
+
+    /* === ERROR === */
+    .error-msg {
+      color: var(--red);
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.15);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-top: 16px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .error-msg.visible { display: block; }
+
+    /* === ANIMATIONS === */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* === ANIMATED BG ORBS === */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orb-1 {
+      width: 500px;
+      height: 500px;
+      background: rgba(99,102,241,0.12);
+      top: -120px;
+      right: -120px;
+      animation: orbFloat1 25s ease-in-out infinite;
+    }
+
+    .bg-orb-2 {
+      width: 350px;
+      height: 350px;
+      background: rgba(139,92,246,0.08);
+      bottom: 15%;
+      left: -100px;
+      animation: orbFloat2 30s ease-in-out infinite;
+    }
+
+    .bg-orb-3 {
+      width: 280px;
+      height: 280px;
+      background: rgba(59,130,246,0.07);
+      top: 45%;
+      right: 5%;
+      animation: orbFloat3 22s ease-in-out infinite;
+    }
+
+    @keyframes orbFloat1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      30% { transform: translate(-40px, 50px) scale(1.15); }
+      60% { transform: translate(30px, -30px) scale(0.9); }
+    }
+
+    @keyframes orbFloat2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      40% { transform: translate(50px, -40px) scale(1.1); }
+      70% { transform: translate(-20px, 30px) scale(0.95); }
+    }
+
+    @keyframes orbFloat3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      35% { transform: translate(-30px, -50px) scale(1.08); }
+      65% { transform: translate(40px, 20px) scale(0.92); }
+    }
+
+    /* === OPTION CHIPS (effects) === */
+    .option-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .option-chip {
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .option-chip:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    .option-chip.active {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+      color: var(--accent-light);
+      box-shadow: 0 0 12px rgba(99,102,241,0.1);
+    }
+
+    .option-group {
+      margin-bottom: 18px;
+    }
+
+    .option-group label {
+      margin-bottom: 8px;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 640px) {
+      .templates-grid { grid-template-columns: 1fr; }
       .form-row { grid-template-columns: 1fr; }
-      .photo-previews { grid-template-columns: repeat(3, 1fr); }
-      .style-presets { grid-template-columns: repeat(3, 1fr); }
+      .form-row.triple { grid-template-columns: 1fr; }
+      .photo-grid { grid-template-columns: repeat(3, 1fr); }
+      .style-grid { grid-template-columns: repeat(3, 1fr); }
+      .progress-label { display: none; }
+      .progress-line { width: 24px; }
+      .header h1 { font-size: 28px; }
     }
   </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>KREATOR WIDEO</h1>
-  <p>Wpisz dane oferty, wrzuc zdjecia, wybierz szablon — gotowe!</p>
-</div>
+<!-- Animated background orbs -->
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
 
-<div class="container">
+<div class="app">
 
-  <!-- TEMPLATE SELECTION -->
-  <div class="templates">
-    <div class="template-card active" data-template="reel" onclick="selectTemplate('reel')">
-      <div class="icon">🎬</div>
-      <div class="name">Rolka ofertowa</div>
-      <div class="desc">Wideo z intro, zdjeciami i CTA</div>
-      <div class="format">9:16 MP4</div>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      REALTOOLS
     </div>
-    <div class="template-card" data-template="carousel" onclick="selectTemplate('carousel')">
-      <div class="icon">📸</div>
-      <div class="name">Karuzela</div>
-      <div class="desc">Slajdy na Instagram (PNG)</div>
-      <div class="format">1:1 PNG x5</div>
+    <h1>Kreator Wideo</h1>
+    <p>Dane oferty, zdjecia, szablon — wideo gotowe w minute</p>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress" id="progressBar">
+    <div class="progress-step active" data-step="0" onclick="goToStep(0)">
+      <div class="progress-num" id="pNum0">1</div>
+      <span class="progress-label">Szablon</span>
     </div>
-    <div class="template-card" data-template="sold" onclick="selectTemplate('sold')">
-      <div class="icon">🏆</div>
-      <div class="name">Sprzedane!</div>
-      <div class="desc">Krotkie wideo celebrujace</div>
-      <div class="format">1:1 MP4</div>
+    <div class="progress-line" id="pLine0"></div>
+    <div class="progress-step disabled" data-step="1" onclick="goToStep(1)">
+      <div class="progress-num" id="pNum1">2</div>
+      <span class="progress-label">Oferta</span>
+    </div>
+    <div class="progress-line" id="pLine1"></div>
+    <div class="progress-step disabled" data-step="2" onclick="goToStep(2)">
+      <div class="progress-num" id="pNum2">3</div>
+      <span class="progress-label">Zdjecia</span>
+    </div>
+    <div class="progress-line" id="pLine2"></div>
+    <div class="progress-step disabled" data-step="3" onclick="goToStep(3)">
+      <div class="progress-num" id="pNum3">4</div>
+      <span class="progress-label">Branding</span>
     </div>
   </div>
 
-  <!-- FORM -->
-  <form id="kreatorForm" onsubmit="return false;">
+  <!-- ============ STEP 1: TEMPLATE ============ -->
+  <div class="step active" id="step0">
+    <div class="step-title">Wybierz szablon</div>
+    <div class="step-desc">Jaki format wideo chcesz wygenerowac?</div>
 
-    <!-- STYL WIZUALNY -->
+    <div class="templates-grid">
+      <div class="tpl-card active" data-template="reel" onclick="selectTemplate('reel')">
+        <div class="tpl-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+        </div>
+        <div class="tpl-name">Rolka ofertowa</div>
+        <div class="tpl-desc">Wideo z intro, zdjeciami i CTA</div>
+        <div class="tpl-format">9:16 MP4</div>
+      </div>
+      <div class="tpl-card" data-template="carousel" onclick="selectTemplate('carousel')">
+        <div class="tpl-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div class="tpl-name">Karuzela</div>
+        <div class="tpl-desc">Slajdy na Instagram</div>
+        <div class="tpl-format">1:1 PNG</div>
+      </div>
+      <div class="tpl-card" data-template="sold" onclick="selectTemplate('sold')">
+        <div class="tpl-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3-3h2V7h2v5h2l-3 3z"/><circle cx="12" cy="12" r="10"/><path d="M8 21.2A10 10 0 015.9 19"/><path d="M16 21.2A10 10 0 0018.1 19"/></svg>
+        </div>
+        <div class="tpl-name">Sprzedane!</div>
+        <div class="tpl-desc">Krotkie wideo celebrujace</div>
+        <div class="tpl-format">1:1 MP4</div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-next" onclick="nextStep()">Dalej <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ============ STEP 2: PROPERTY DATA ============ -->
+  <div class="step" id="step1">
+    <div class="step-title">Dane oferty</div>
+    <div class="step-desc">Wypelnij recznie lub wklej link z Otodom</div>
+
+    <!-- OTODOM AUTOFILL -->
+    <div class="autofill-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      <input type="text" id="otodomUrl" placeholder="Wklej link z Otodom.pl — wypelnimy automatycznie">
+      <span class="autofill-status" id="autofillStatus">Pobrano</span>
+      <button class="autofill-btn" id="autofillBtn" onclick="scrapeOtodom()">Pobierz</button>
+    </div>
+
     <div class="form-section">
-      <h3>Styl wizualny</h3>
-      <div class="style-presets" id="stylePresets">
+      <div class="form-section-label">Podstawowe</div>
+      <div class="form-row full">
+        <div>
+          <label>Tytul oferty</label>
+          <input type="text" id="title" placeholder="np. Apartament z widokiem na morze">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Lokalizacja</label>
+          <input type="text" id="location" placeholder="np. Sopot, ul. Monte Cassino 15">
+        </div>
+        <div>
+          <label>Cena</label>
+          <input type="text" id="price" placeholder="np. 1 850 000 PLN">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section" id="detailsSection">
+      <div class="form-section-label">Szczegoly</div>
+      <div class="form-row" id="detailsRow1">
+        <div>
+          <label>Powierzchnia</label>
+          <input type="text" id="area" placeholder="np. 95 m2">
+        </div>
+        <div>
+          <label>Pokoje</label>
+          <input type="text" id="rooms" placeholder="np. 4 pokoje">
+        </div>
+      </div>
+      <div class="form-row" id="detailsRow2">
+        <div>
+          <label>Pietro</label>
+          <input type="text" id="floor" placeholder="np. 3 pietro">
+        </div>
+        <div>
+          <label>Rok budowy</label>
+          <input type="text" id="year" placeholder="np. 2023">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section" id="featuresSection">
+      <div class="form-section-label">Cechy oferty</div>
+      <div class="features-wrap">
+        <input type="text" id="featureInput" placeholder="np. Taras 20m2" onkeydown="if(event.key==='Enter'){event.preventDefault();addFeature()}">
+        <button type="button" onclick="addFeature()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Dodaj
+        </button>
+      </div>
+      <div class="feature-tags" id="featuresList"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Wstecz</button>
+      <button class="btn btn-next" onclick="nextStep()">Dalej <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ============ STEP 3: PHOTOS ============ -->
+  <div class="step" id="step2">
+    <div class="step-title">Zdjecia</div>
+    <div class="step-desc">Wrzuc do 5 zdjec nieruchomosci</div>
+
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <div class="dropzone-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="dropzone-text">Przeciagnij zdjecia lub <strong>kliknij tutaj</strong></div>
+      <div class="dropzone-hint">JPG / PNG, max 5 zdjec</div>
+    </div>
+    <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+    <div class="photo-grid" id="photoGrid"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Wstecz</button>
+      <button class="btn btn-next" onclick="nextStep()">Dalej <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ============ STEP 4: BRANDING ============ -->
+  <div class="step" id="step3">
+    <div class="step-title">Branding i agent</div>
+    <div class="step-desc">Styl wizualny, logo i dane kontaktowe</div>
+
+    <div class="form-section">
+      <div class="form-section-label">Styl wizualny</div>
+      <div class="style-grid" id="styleGrid">
         <div class="style-card active" data-style="luksusowy" onclick="selectStyle('luksusowy')">
-          <div class="swatch" style="background: linear-gradient(135deg, #D4AF37, #F5E6A3);"></div>
+          <div class="style-swatch" style="background:linear-gradient(135deg,#D4AF37,#F5E6A3)"></div>
           <div class="style-name">Luksusowy</div>
         </div>
         <div class="style-card" data-style="nowoczesny" onclick="selectStyle('nowoczesny')">
-          <div class="swatch" style="background: linear-gradient(135deg, #3B82F6, #93C5FD);"></div>
+          <div class="style-swatch" style="background:linear-gradient(135deg,#3B82F6,#93C5FD)"></div>
           <div class="style-name">Nowoczesny</div>
         </div>
         <div class="style-card" data-style="elegancki" onclick="selectStyle('elegancki')">
-          <div class="swatch" style="background: linear-gradient(135deg, #C9A96E, #E8D5B0);"></div>
+          <div class="style-swatch" style="background:linear-gradient(135deg,#C9A96E,#E8D5B0)"></div>
           <div class="style-name">Elegancki</div>
         </div>
         <div class="style-card" data-style="minimalistyczny" onclick="selectStyle('minimalistyczny')">
-          <div class="swatch" style="background: linear-gradient(135deg, #FFFFFF, #A0A0A0);"></div>
+          <div class="style-swatch" style="background:linear-gradient(135deg,#FFF,#A0A0A0)"></div>
           <div class="style-name">Minimalistyczny</div>
         </div>
         <div class="style-card" data-style="naturalne" onclick="selectStyle('naturalne')">
-          <div class="swatch" style="background: linear-gradient(135deg, #7CB342, #AED581);"></div>
+          <div class="style-swatch" style="background:linear-gradient(135deg,#7CB342,#AED581)"></div>
           <div class="style-name">Naturalne</div>
         </div>
       </div>
     </div>
 
-    <!-- BRANDING -->
     <div class="form-section">
-      <h3>Branding</h3>
+      <div class="form-section-label">Teksty wideo</div>
       <div class="form-row">
         <div>
           <label>Naglowek (intro)</label>
@@ -596,84 +1302,27 @@
           <input type="text" id="ctaText" placeholder="np. ZADZWON" value="ZADZWON">
         </div>
       </div>
-      <div class="form-row">
+      <div class="form-row full">
         <div>
           <label>Podtekst CTA</label>
           <input type="text" id="ctaSubtext" placeholder="np. ZAINTERESOWANY?" value="ZAINTERESOWANY?">
         </div>
-        <div>
-          <label>Logo agencji</label>
-          <div class="logo-upload-area">
-            <div class="logo-preview" id="logoPreview">
-              <span class="placeholder">🏢</span>
-            </div>
-            <button type="button" class="logo-upload-btn" onclick="document.getElementById('logoInput').click()">Wgraj logo</button>
-            <button type="button" class="logo-remove" id="logoRemoveBtn" onclick="removeLogo()" style="display:none">Usun</button>
-          </div>
-          <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleLogo(this.files)">
-        </div>
       </div>
     </div>
 
-    <!-- DANE OFERTY -->
     <div class="form-section">
-      <h3>Dane oferty</h3>
-      <div class="form-row full">
-        <div>
-          <label>Tytul oferty</label>
-          <input type="text" id="title" placeholder="np. Apartament z widokiem na morze" value="Apartament z widokiem na morze">
-        </div>
-      </div>
-      <div class="form-row">
-        <div>
-          <label>Lokalizacja</label>
-          <input type="text" id="location" placeholder="np. Sopot, ul. Monte Cassino 15" value="Sopot, ul. Monte Cassino 15">
-        </div>
-        <div>
-          <label>Cena</label>
-          <input type="text" id="price" placeholder="np. 1 850 000 PLN" value="1 850 000 PLN">
-        </div>
-      </div>
-
-      <div class="form-row" id="detailsRow">
-        <div>
-          <label>Powierzchnia</label>
-          <input type="text" id="area" placeholder="np. 95 m2" value="95 m2">
-        </div>
-        <div>
-          <label>Pokoje</label>
-          <input type="text" id="rooms" placeholder="np. 4 pokoje" value="4 pokoje">
-        </div>
-      </div>
-      <div class="form-row" id="detailsRow2">
-        <div>
-          <label>Pietro</label>
-          <input type="text" id="floor" placeholder="np. 3 pietro" value="3 pietro">
-        </div>
-        <div>
-          <label>Rok budowy</label>
-          <input type="text" id="year" placeholder="np. 2023" value="2023">
+      <div class="form-section-label">Efekty wideo</div>
+      <div>
+        <label>Opisz jak ma wygladac wideo</label>
+        <textarea id="effectsDescription" rows="3" placeholder="np. Szybkie dynamiczne przejscia, tekst na dole, kinowy overlay, zoom na zdjeciach"></textarea>
+        <div style="margin-top:8px; font-size:11px; color:var(--text-3); line-height:1.6">
+          Mozesz opisac: tempo (szybkie / wolne / spokojne), pozycje tekstu (gora / dol / srodek), przejscia (przenikanie / przesuwanie / zoom), overlay (ciemny / jasny / kinowy / gradient / brak)
         </div>
       </div>
     </div>
 
-    <!-- CECHY -->
-    <div class="form-section" id="featuresSection">
-      <h3>Cechy oferty</h3>
-      <div class="add-feature">
-        <input type="text" id="featureInput" placeholder="np. Taras 20m2" onkeydown="if(event.key==='Enter'){event.preventDefault();addFeature()}">
-        <button type="button" onclick="addFeature()">+ Dodaj</button>
-      </div>
-      <div class="features-container" id="featuresList">
-        <div class="feature-tag" data-feature="Taras 20m2">Taras 20m2 <span class="remove" onclick="removeFeature(this)">&times;</span></div>
-        <div class="feature-tag" data-feature="Garaz podziemny">Garaz podziemny <span class="remove" onclick="removeFeature(this)">&times;</span></div>
-        <div class="feature-tag" data-feature="Klimatyzacja">Klimatyzacja <span class="remove" onclick="removeFeature(this)">&times;</span></div>
-      </div>
-    </div>
-
-    <!-- DANE AGENTA -->
     <div class="form-section">
-      <h3>Dane agenta</h3>
+      <div class="form-section-label">Dane agenta</div>
       <div class="form-row">
         <div>
           <label>Imie i nazwisko</label>
@@ -684,37 +1333,56 @@
           <input type="text" id="agentPhone" placeholder="np. +48 500 100 200">
         </div>
       </div>
-    </div>
-
-    <!-- ZDJECIA -->
-    <div class="form-section">
-      <h3>Zdjecia</h3>
-      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
-        <div class="icon">📷</div>
-        <div class="text">Przeciagnij zdjecia lub <strong>kliknij tutaj</strong></div>
-        <div class="text" style="margin-top:4px;font-size:12px">JPG / PNG, max 5 zdjec</div>
+      <div>
+        <label>Logo agencji</label>
+        <div class="logo-row">
+          <div class="logo-box" id="logoBox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><circle cx="8" cy="6" r="0.5" fill="currentColor"/><circle cx="12" cy="6" r="0.5" fill="currentColor"/><circle cx="16" cy="6" r="0.5" fill="currentColor"/></svg>
+          </div>
+          <button type="button" class="logo-upload-btn" onclick="document.getElementById('logoInput').click()">Wgraj logo</button>
+          <button type="button" class="logo-remove-btn" id="logoRemoveBtn" onclick="removeLogo()" style="display:none">Usun</button>
+        </div>
+        <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleLogo(this.files)">
       </div>
-      <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
-      <div class="photo-previews" id="photoPreviews"></div>
     </div>
 
-    <!-- GENERATE -->
-    <button type="button" class="generate-btn" id="generateBtn" onclick="generate()">
-      GENERUJ
-    </button>
-  </form>
-
-  <!-- STATUS -->
-  <div class="status" id="status">
-    <div class="spinner"></div>
-    <div class="message" id="statusMessage">Renderowanie... to moze potrwac 30-60 sekund</div>
+    <div class="nav-buttons">
+      <button class="btn btn-back" onclick="prevStep()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Wstecz</button>
+      <button class="btn btn-generate" id="generateBtn" onclick="generate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        GENERUJ
+      </button>
+    </div>
   </div>
 
-  <!-- RESULT -->
-  <div class="result" id="result">
-    <div class="success-icon">✅</div>
-    <div class="success-text" id="resultText">Gotowe!</div>
-    <a class="download-btn" id="downloadLink" href="#" download>POBIERZ</a>
+  <!-- ============ LOADING ============ -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-ring">
+      <svg viewBox="0 0 64 64"><circle class="ring-bg" cx="32" cy="32" r="28"/><circle class="ring-progress" id="ringProgress" cx="32" cy="32" r="28"/></svg>
+    </div>
+    <div class="loading-title">Generowanie...</div>
+    <div class="loading-stage" id="loadingStage">Przygotowywanie danych</div>
+    <div class="loading-stages">
+      <div class="stage active" id="stage0"><div class="stage-icon"><div class="stage-spinner"></div></div> Przygotowywanie danych</div>
+      <div class="stage" id="stage1"><div class="stage-icon"><div class="stage-spinner"></div></div> Renderowanie scen</div>
+      <div class="stage" id="stage2"><div class="stage-icon"><div class="stage-spinner"></div></div> Skladanie wideo</div>
+      <div class="stage" id="stage3"><div class="stage-icon"><div class="stage-spinner"></div></div> Finalizowanie</div>
+    </div>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div class="result-card" id="result">
+    <div class="result-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="result-title" id="resultTitle">Gotowe!</div>
+    <div class="result-sub" id="resultSub">Twoje wideo jest gotowe do pobrania</div>
+    <a class="download-btn" id="downloadLink" href="#" download>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      POBIERZ
+    </a>
+    <br>
+    <button class="btn-new" onclick="resetForm()">Nowe wideo</button>
   </div>
 
   <!-- ERROR -->
@@ -723,114 +1391,205 @@
 </div>
 
 <script>
+  // === STATE ===
+  let currentStep = 0;
+  let maxVisited = 0;
   let currentTemplate = 'reel';
   let currentStyle = 'luksusowy';
   let uploadedPhotos = [];
   let logoPath = '';
   let sessionId = Math.random().toString(36).substring(2, 10);
 
-  // --- TEMPLATE SELECTION ---
-  function selectTemplate(template) {
-    currentTemplate = template;
-    document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
-    document.querySelector(`[data-template="${template}"]`).classList.add('active');
+  const STEPS = 4;
+  const checkSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
 
-    // Show/hide details fields
-    const showDetails = template !== 'sold';
-    document.getElementById('detailsRow').style.display = showDetails ? 'grid' : 'none';
-    document.getElementById('detailsRow2').style.display = showDetails ? 'grid' : 'none';
+  // === INIT: Load saved agent data ===
+  (function loadSavedData() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('realtools_agent') || '{}');
+      if (saved.agent) document.getElementById('agent').value = saved.agent;
+      if (saved.agentPhone) document.getElementById('agentPhone').value = saved.agentPhone;
+      if (saved.headline) document.getElementById('headline').value = saved.headline;
+      if (saved.ctaText) document.getElementById('ctaText').value = saved.ctaText;
+      if (saved.ctaSubtext) document.getElementById('ctaSubtext').value = saved.ctaSubtext;
+    } catch(e) {}
+  })();
+
+  function saveAgentData() {
+    try {
+      localStorage.setItem('realtools_agent', JSON.stringify({
+        agent: document.getElementById('agent').value,
+        agentPhone: document.getElementById('agentPhone').value,
+        headline: document.getElementById('headline').value,
+        ctaText: document.getElementById('ctaText').value,
+        ctaSubtext: document.getElementById('ctaSubtext').value,
+      }));
+    } catch(e) {}
+  }
+
+  // === STEP NAVIGATION ===
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    currentStep = n;
+    if (n > maxVisited) maxVisited = n;
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextStep() {
+    if (currentStep < STEPS - 1) showStep(currentStep + 1);
+  }
+
+  function prevStep() {
+    if (currentStep > 0) showStep(currentStep - 1);
+  }
+
+  function goToStep(n) {
+    if (n <= maxVisited) showStep(n);
+  }
+
+  function updateProgress() {
+    for (let i = 0; i < STEPS; i++) {
+      const step = document.querySelector(`.progress-step[data-step="${i}"]`);
+      const num = document.getElementById('pNum' + i);
+      step.classList.remove('active', 'completed', 'disabled');
+
+      if (i < currentStep) {
+        step.classList.add('completed');
+        num.innerHTML = checkSVG;
+      } else if (i === currentStep) {
+        step.classList.add('active');
+        num.textContent = i + 1;
+      } else if (i <= maxVisited) {
+        num.textContent = i + 1;
+      } else {
+        step.classList.add('disabled');
+        num.textContent = i + 1;
+      }
+
+      if (i < STEPS - 1) {
+        const line = document.getElementById('pLine' + i);
+        line.classList.toggle('filled', i < currentStep);
+      }
+    }
+  }
+
+  // === TEMPLATE SELECTION ===
+  function selectTemplate(tpl) {
+    currentTemplate = tpl;
+    document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-template="${tpl}"]`).classList.add('active');
+
+    const showDetails = tpl !== 'sold';
+    document.getElementById('detailsSection').style.display = showDetails ? 'block' : 'none';
     document.getElementById('featuresSection').style.display = showDetails ? 'block' : 'none';
   }
 
-  // --- STYLE SELECTION ---
+  // === STYLE SELECTION ===
   function selectStyle(style) {
     currentStyle = style;
     document.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
     document.querySelector(`[data-style="${style}"]`).classList.add('active');
   }
 
-  // --- LOGO UPLOAD ---
-  function handleLogo(files) {
-    if (!files || files.length === 0) return;
-    const file = files[0];
+  // === OTODOM AUTO-FILL ===
+  async function scrapeOtodom() {
+    const url = document.getElementById('otodomUrl').value.trim();
+    if (!url) return;
 
-    const formData = new FormData();
-    formData.append('session_id', sessionId);
-    formData.append('logo', file);
+    const btn = document.getElementById('autofillBtn');
+    const status = document.getElementById('autofillStatus');
+    btn.disabled = true;
+    btn.textContent = 'Pobieram...';
+    status.classList.remove('visible');
+    hideError();
 
-    fetch('/upload-logo', { method: 'POST', body: formData })
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) { showError(data.error); return; }
-        logoPath = data.logoPath;
-        const preview = document.getElementById('logoPreview');
-        preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="logo">`;
-        document.getElementById('logoRemoveBtn').style.display = 'inline';
-      })
-      .catch(err => showError('Blad uploadu logo: ' + err.message));
+    try {
+      const resp = await fetch('/scrape-otodom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, session_id: sessionId }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || data.error) throw new Error(data.error || 'Blad pobierania');
+
+      // Fill form fields
+      if (data.title) document.getElementById('title').value = data.title;
+      if (data.location) document.getElementById('location').value = data.location;
+      if (data.price) document.getElementById('price').value = data.price;
+      if (data.area) document.getElementById('area').value = data.area;
+      if (data.rooms) document.getElementById('rooms').value = data.rooms;
+      if (data.floor) document.getElementById('floor').value = data.floor;
+      if (data.year) document.getElementById('year').value = data.year;
+
+      // Fill features
+      if (data.features && data.features.length > 0) {
+        document.getElementById('featuresList').innerHTML = '';
+        data.features.slice(0, 8).forEach(f => addFeatureText(f));
+      }
+
+      // Fill photos
+      if (data.photos && data.photos.length > 0) {
+        uploadedPhotos = data.photos.map(p => ({
+          path: p.path,
+          name: p.name,
+          label: '',
+          localUrl: '/uploads/' + p.path.replace('uploads/', ''),
+        }));
+        renderPreviews();
+      }
+
+      status.textContent = 'Pobrano';
+      status.classList.add('visible');
+    } catch(e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Pobierz';
+    }
   }
 
-  function removeLogo() {
-    logoPath = '';
-    document.getElementById('logoPreview').innerHTML = '<span class="placeholder">🏢</span>';
-    document.getElementById('logoRemoveBtn').style.display = 'none';
-    document.getElementById('logoInput').value = '';
-  }
-
-  // --- FEATURES ---
+  // === FEATURES ===
   function addFeature() {
     const input = document.getElementById('featureInput');
     const text = input.value.trim();
     if (!text) return;
-
-    const container = document.getElementById('featuresList');
-    const tag = document.createElement('div');
-    tag.className = 'feature-tag';
-    tag.dataset.feature = text;
-    tag.innerHTML = `${text} <span class="remove" onclick="removeFeature(this)">&times;</span>`;
-    container.appendChild(tag);
+    addFeatureText(text);
     input.value = '';
     input.focus();
   }
 
-  function removeFeature(el) {
-    el.parentElement.remove();
+  function addFeatureText(text) {
+    const container = document.getElementById('featuresList');
+    const tag = document.createElement('div');
+    tag.className = 'feature-tag';
+    tag.dataset.feature = text;
+    tag.innerHTML = text + ' <span class="remove-feat" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>';
+    container.appendChild(tag);
   }
 
   function getFeatures() {
-    return Array.from(document.querySelectorAll('.feature-tag'))
-      .map(t => t.dataset.feature);
+    return Array.from(document.querySelectorAll('.feature-tag')).map(t => t.dataset.feature);
   }
 
-  // --- PHOTO UPLOAD ---
+  // === PHOTO UPLOAD ===
   const dropzone = document.getElementById('dropzone');
 
-  dropzone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropzone.classList.add('dragover');
-  });
-
-  dropzone.addEventListener('dragleave', () => {
-    dropzone.classList.remove('dragover');
-  });
-
-  dropzone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropzone.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files);
-  });
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
 
   function handleFiles(files) {
     const maxPhotos = 5;
     const remaining = maxPhotos - uploadedPhotos.length;
     const toAdd = Array.from(files).slice(0, remaining);
-
     if (toAdd.length === 0) return;
 
-    // Upload to server
     const formData = new FormData();
     formData.append('session_id', sessionId);
-    toAdd.forEach((f, i) => formData.append(`photo_${i}`, f));
+    toAdd.forEach((f, i) => formData.append('photo_' + i, f));
 
     fetch('/upload', { method: 'POST', body: formData })
       .then(r => r.json())
@@ -849,19 +1608,14 @@
   }
 
   function renderPreviews() {
-    const container = document.getElementById('photoPreviews');
+    const container = document.getElementById('photoGrid');
     container.innerHTML = '';
-
     uploadedPhotos.forEach((photo, i) => {
       const div = document.createElement('div');
-      div.className = 'photo-preview';
-      div.innerHTML = `
-        <img src="${photo.localUrl}" alt="${photo.name}">
-        <button class="remove-photo" onclick="removePhoto(${i})">&times;</button>
-        <input class="photo-label-input" placeholder="Opis..."
-          value="${photo.label}"
-          onchange="uploadedPhotos[${i}].label = this.value">
-      `;
+      div.className = 'photo-item';
+      div.innerHTML = '<img src="' + photo.localUrl + '" alt="' + photo.name + '">'
+        + '<button class="remove-photo" onclick="removePhoto(' + i + ')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+        + '<input class="photo-label" placeholder="Opis..." value="' + photo.label + '" onchange="uploadedPhotos[' + i + '].label=this.value">';
       container.appendChild(div);
     });
   }
@@ -871,12 +1625,40 @@
     renderPreviews();
   }
 
-  // --- GENERATE ---
+  // === LOGO ===
+  function handleLogo(files) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    formData.append('logo', file);
+
+    fetch('/upload-logo', { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { showError(data.error); return; }
+        logoPath = data.logoPath;
+        document.getElementById('logoBox').innerHTML = '<img src="' + URL.createObjectURL(file) + '" alt="logo">';
+        document.getElementById('logoRemoveBtn').style.display = 'inline';
+      })
+      .catch(err => showError('Blad uploadu logo: ' + err.message));
+  }
+
+  function removeLogo() {
+    logoPath = '';
+    document.getElementById('logoBox').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22V12h6v10"/><circle cx="8" cy="6" r="0.5" fill="currentColor"/><circle cx="12" cy="6" r="0.5" fill="currentColor"/><circle cx="16" cy="6" r="0.5" fill="currentColor"/></svg>';
+    document.getElementById('logoRemoveBtn').style.display = 'none';
+    document.getElementById('logoInput').value = '';
+  }
+
+  // === GENERATE ===
   async function generate() {
     if (uploadedPhotos.length === 0) {
-      showError('Dodaj przynajmniej 1 zdjecie!');
+      showError('Dodaj przynajmniej 1 zdjecie (krok 3)');
       return;
     }
+
+    saveAgentData();
 
     const data = {
       template: currentTemplate,
@@ -890,34 +1672,51 @@
       features: getFeatures(),
       agent: document.getElementById('agent').value,
       agentPhone: document.getElementById('agentPhone').value,
-      photos: uploadedPhotos.map(p => ({
-        path: p.path,
-        label: p.label || p.name.replace(/\.[^.]+$/, ''),
-      })),
+      photos: uploadedPhotos.map(p => ({ path: p.path, label: p.label || p.name.replace(/\.[^.]+$/, '') })),
       stylePreset: currentStyle,
       headline: document.getElementById('headline').value,
       ctaText: document.getElementById('ctaText').value,
       ctaSubtext: document.getElementById('ctaSubtext').value,
       logoPath: logoPath || undefined,
+      effectsDescription: document.getElementById('effectsDescription').value,
     };
 
-    // UI state
+    // Show loading
     hideError();
     document.getElementById('generateBtn').disabled = true;
-    document.getElementById('status').classList.add('visible');
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('loading').classList.add('visible');
     document.getElementById('result').classList.remove('visible');
 
-    const msgs = [
-      'Renderowanie... to moze potrwac 30-60 sekund',
-      'Przygotowywanie scen...',
-      'Generowanie animacji...',
-      'Prawie gotowe...',
+    // Animate stages
+    const stages = [
+      { el: 'stage0', progress: 15, time: 0 },
+      { el: 'stage1', progress: 50, time: 4000 },
+      { el: 'stage2', progress: 80, time: 20000 },
+      { el: 'stage3', progress: 95, time: 40000 },
     ];
-    let msgIdx = 0;
-    const msgInterval = setInterval(() => {
-      msgIdx = Math.min(msgIdx + 1, msgs.length - 1);
-      document.getElementById('statusMessage').textContent = msgs[msgIdx];
-    }, 15000);
+
+    const ring = document.getElementById('ringProgress');
+    const circumference = 2 * Math.PI * 28;
+
+    function setProgress(pct) {
+      ring.style.strokeDashoffset = circumference - (pct / 100) * circumference;
+    }
+
+    let stageTimers = [];
+    stages.forEach((s, i) => {
+      const timer = setTimeout(() => {
+        document.querySelectorAll('.loading-stages .stage').forEach((el, j) => {
+          el.classList.remove('active');
+          if (j < i) el.classList.add('done');
+        });
+        document.getElementById(s.el).classList.add('active');
+        document.getElementById('loadingStage').textContent = document.getElementById(s.el).textContent.trim();
+        setProgress(s.progress);
+      }, s.time);
+      stageTimers.push(timer);
+    });
 
     try {
       const resp = await fetch('/render', {
@@ -927,36 +1726,66 @@
       });
 
       const result = await resp.json();
-      clearInterval(msgInterval);
+      stageTimers.forEach(clearTimeout);
 
-      if (!resp.ok || result.error) {
-        throw new Error(result.error || 'Nieznany blad');
-      }
+      if (!resp.ok || result.error) throw new Error(result.error || 'Nieznany blad');
+
+      setProgress(100);
+      await new Promise(r => setTimeout(r, 500));
 
       // Show result
-      document.getElementById('status').classList.remove('visible');
+      document.getElementById('loading').classList.remove('visible');
       document.getElementById('result').classList.add('visible');
 
-      const typeText = result.type === 'carousel'
-        ? `Karuzela gotowa! (${result.slide_count} slajdow)`
-        : 'Wideo gotowe!';
-      document.getElementById('resultText').textContent = typeText;
+      const isCarousel = result.type === 'carousel';
+      document.getElementById('resultTitle').textContent = isCarousel ? 'Karuzela gotowa!' : 'Wideo gotowe!';
+      document.getElementById('resultSub').textContent = isCarousel
+        ? result.slide_count + ' slajdow do pobrania'
+        : 'Pobierz plik i publikuj';
 
       const link = document.getElementById('downloadLink');
       link.href = result.download_url;
       link.download = result.filename;
-      link.textContent = result.type === 'carousel' ? 'POBIERZ ZIP' : 'POBIERZ MP4';
+      link.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> POBIERZ ' + (isCarousel ? 'ZIP' : 'MP4');
 
-    } catch (err) {
-      clearInterval(msgInterval);
-      document.getElementById('status').classList.remove('visible');
-      showError(err.message);
+    } catch(e) {
+      stageTimers.forEach(clearTimeout);
+      document.getElementById('loading').classList.remove('visible');
+      document.getElementById('progressBar').style.display = 'flex';
+      showStep(3);
+      showError(e.message);
     } finally {
       document.getElementById('generateBtn').disabled = false;
     }
   }
 
-  // --- HELPERS ---
+  // === RESET ===
+  function resetForm() {
+    document.getElementById('result').classList.remove('visible');
+    document.getElementById('progressBar').style.display = 'flex';
+
+    // Reset form
+    ['title','location','price','area','rooms','floor','year','otodomUrl','effectsDescription'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('featuresList').innerHTML = '';
+    uploadedPhotos = [];
+    renderPreviews();
+    document.getElementById('autofillStatus').classList.remove('visible');
+
+    // Reset loading stages
+    document.querySelectorAll('.loading-stages .stage').forEach(s => {
+      s.classList.remove('active', 'done');
+    });
+    document.getElementById('ringProgress').style.strokeDashoffset = 175;
+
+    sessionId = Math.random().toString(36).substring(2, 10);
+    maxVisited = 0;
+    showStep(0);
+  }
+
+  // === HELPERS ===
   function showError(msg) {
     const el = document.getElementById('errorMsg');
     el.textContent = msg;

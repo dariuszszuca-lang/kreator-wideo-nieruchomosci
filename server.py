@@ -7,8 +7,16 @@ import uuid
 import subprocess
 import shutil
 import zipfile
+import re
 from pathlib import Path
 from flask import Flask, request, jsonify, send_file, render_template
+
+try:
+    import requests as req
+    from bs4 import BeautifulSoup
+    HAS_SCRAPING = True
+except ImportError:
+    HAS_SCRAPING = False
 
 app = Flask(__name__)
 
@@ -136,6 +144,12 @@ def render_reel(data, render_id):
     if brand:
         props["brand"] = brand
 
+    # Video effects from description
+    desc = data.get("effectsDescription", "")
+    effects = parse_effects_description(desc) if desc else data.get("effects", {})
+    if effects:
+        props["effects"] = effects
+
     props_file = OUT_DIR / f"{render_id}-props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False))
 
@@ -178,6 +192,12 @@ def render_carousel(data, render_id):
     }
     if brand:
         base_props["brand"] = brand
+
+    # Video effects from description
+    desc = data.get("effectsDescription", "")
+    effects = parse_effects_description(desc) if desc else data.get("effects", {})
+    if effects:
+        base_props["effects"] = effects
 
     slide_num = 1
 
@@ -274,6 +294,12 @@ def render_sold(data, render_id):
     if brand:
         props["brand"] = brand
 
+    # Video effects from description
+    desc = data.get("effectsDescription", "")
+    effects = parse_effects_description(desc) if desc else data.get("effects", {})
+    if effects:
+        props["effects"] = effects
+
     props_file = OUT_DIR / f"{render_id}-props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False))
 
@@ -328,6 +354,245 @@ def download_file(filename):
         as_attachment=True,
         download_name=filename,
     )
+
+
+@app.route("/uploads/<path:filename>")
+def serve_upload(filename):
+    """Serwuj zdjecia z uploads (potrzebne do podgladu Otodom)"""
+    file_path = UPLOADS_DIR / filename
+    if not file_path.exists():
+        return jsonify({"error": "Plik nie znaleziony"}), 404
+    return send_file(str(file_path))
+
+
+@app.route("/scrape-otodom", methods=["POST"])
+def scrape_otodom():
+    """Scrape danych oferty z Otodom URL"""
+    if not HAS_SCRAPING:
+        return jsonify({"error": "Brak bibliotek (requests, beautifulsoup4). Zainstaluj: pip install requests beautifulsoup4"}), 500
+
+    data = request.json
+    url = data.get("url", "")
+    session_id = data.get("session_id", str(uuid.uuid4())[:8])
+
+    if not url or "otodom.pl" not in url:
+        return jsonify({"error": "Podaj prawidlowy link z Otodom.pl"}), 400
+
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "pl-PL,pl;q=0.9,en;q=0.8",
+        }
+
+        resp = req.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # Try __NEXT_DATA__ first (Otodom uses Next.js)
+        script = soup.find("script", id="__NEXT_DATA__")
+        result = None
+
+        if script:
+            try:
+                next_data = json.loads(script.string)
+                ad = next_data.get("props", {}).get("pageProps", {}).get("ad", {})
+                if not ad:
+                    ad = next_data.get("props", {}).get("pageProps", {}).get("advert", {})
+                if ad:
+                    result = extract_otodom_data(ad)
+            except (json.JSONDecodeError, KeyError):
+                pass
+
+        if not result:
+            result = extract_from_html(soup)
+
+        # Download photos
+        session_dir = UPLOADS_DIR / session_id
+        session_dir.mkdir(parents=True, exist_ok=True)
+
+        photo_paths = []
+        for i, photo_url in enumerate(result.get("photo_urls", [])[:5]):
+            try:
+                photo_resp = req.get(photo_url, headers=headers, timeout=10)
+                photo_resp.raise_for_status()
+                ext = ".jpg"
+                photo_name = f"otodom_{i+1}{ext}"
+                photo_path = session_dir / photo_name
+                photo_path.write_bytes(photo_resp.content)
+                rel_path = f"uploads/{session_id}/{photo_name}"
+                photo_paths.append({"name": photo_name, "path": rel_path})
+            except Exception:
+                continue
+
+        result["photos"] = photo_paths
+        result.pop("photo_urls", None)
+        result["session_id"] = session_id
+
+        return jsonify(result)
+
+    except req.exceptions.Timeout:
+        return jsonify({"error": "Timeout — Otodom nie odpowiada. Sprobuj ponownie."}), 500
+    except req.exceptions.HTTPError as e:
+        return jsonify({"error": f"Otodom zwrocil blad {e.response.status_code}. Sprawdz czy link jest prawidlowy."}), 500
+    except Exception as e:
+        return jsonify({"error": f"Nie udalo sie pobrac danych: {str(e)}"}), 500
+
+
+def extract_otodom_data(ad):
+    """Extract listing data from Otodom __NEXT_DATA__ ad object"""
+    result = {
+        "title": ad.get("title", ""),
+        "price": "",
+        "location": "",
+        "area": "",
+        "rooms": "",
+        "floor": "",
+        "year": "",
+        "features": [],
+        "photo_urls": [],
+    }
+
+    # Location
+    loc = ad.get("location", {})
+    if isinstance(loc, dict):
+        addr = loc.get("address", {})
+        parts = []
+        for key in ["city", "district", "street"]:
+            val = addr.get(key, {})
+            if isinstance(val, dict) and val.get("name"):
+                parts.append(val["name"])
+            elif isinstance(val, str) and val:
+                parts.append(val)
+        result["location"] = ", ".join(parts)
+
+    # Price
+    target = ad.get("target", {})
+    price = target.get("Price") or ad.get("price", {}).get("value")
+    if price:
+        try:
+            result["price"] = f"{int(float(price)):,} PLN".replace(",", " ")
+        except (ValueError, TypeError):
+            result["price"] = str(price)
+
+    # Characteristics
+    chars = ad.get("characteristics", [])
+    if isinstance(chars, list):
+        for char in chars:
+            key = char.get("key", "")
+            value = str(char.get("value", ""))
+            if key == "m" and value:
+                result["area"] = f"{value} m2"
+            elif key == "rooms_num" and value:
+                try:
+                    n = int(float(value))
+                    result["rooms"] = f"{n} {'pokoje' if 2 <= n <= 4 else 'pokoi'}"
+                except ValueError:
+                    result["rooms"] = value
+            elif key == "floor_no" and value:
+                result["floor"] = f"pietro {value}"
+            elif key == "build_year" and value:
+                result["year"] = value
+
+    # Features
+    for cat in ad.get("featuresByCategory", []):
+        if isinstance(cat, dict):
+            for feat in cat.get("features", []):
+                if isinstance(feat, str):
+                    result["features"].append(feat)
+
+    # Photos
+    for img in ad.get("images", []):
+        if isinstance(img, dict):
+            url = img.get("large") or img.get("medium") or img.get("small")
+            if url:
+                result["photo_urls"].append(url)
+
+    return result
+
+
+def extract_from_html(soup):
+    """Fallback: extract from HTML meta tags"""
+    result = {
+        "title": "",
+        "price": "",
+        "location": "",
+        "area": "",
+        "rooms": "",
+        "floor": "",
+        "year": "",
+        "features": [],
+        "photo_urls": [],
+    }
+
+    og_title = soup.find("meta", property="og:title")
+    if og_title:
+        result["title"] = og_title.get("content", "")
+
+    og_desc = soup.find("meta", property="og:description")
+    if og_desc:
+        desc = og_desc.get("content", "")
+        # Try to extract price from description
+        price_match = re.search(r'(\d[\d\s]*)\s*(?:PLN|zł|zl)', desc)
+        if price_match:
+            result["price"] = price_match.group(0).strip()
+
+    og_image = soup.find("meta", property="og:image")
+    if og_image and og_image.get("content"):
+        result["photo_urls"].append(og_image["content"])
+
+    # Try to find more images
+    for img in soup.find_all("img", src=True):
+        src = img["src"]
+        if "apollo.olxcdn.com" in src or "img.otodom.pl" in src:
+            if src not in result["photo_urls"]:
+                result["photo_urls"].append(src)
+
+    return result
+
+
+def parse_effects_description(text: str) -> dict:
+    """Parse free-text description into effects params"""
+    text = text.lower().strip()
+    effects = {
+        "tempo": "normal",
+        "textPosition": "center",
+        "transition": "slide",
+        "overlay": "dark",
+    }
+
+    # Tempo
+    if any(w in text for w in ["szybk", "dynamiczn", "krotk", "fast", "energiczn"]):
+        effects["tempo"] = "fast"
+    elif any(w in text for w in ["woln", "spokoj", "slow", "powol", "delikat"]):
+        effects["tempo"] = "slow"
+
+    # Text position
+    if any(w in text for w in ["na dole", "na dol", "dolna", "bottom", "pod spodem"]):
+        effects["textPosition"] = "bottom"
+    elif any(w in text for w in ["na gorze", "gora", "top", "u gory"]):
+        effects["textPosition"] = "top"
+
+    # Transition
+    if any(w in text for w in ["przenikani", "fade", "rozpływa", "lagod"]):
+        effects["transition"] = "fade"
+    elif any(w in text for w in ["zoom", "przybliz", "zbliz"]):
+        effects["transition"] = "zoom"
+    elif any(w in text for w in ["przesuw", "slide", "wjezd"]):
+        effects["transition"] = "slide"
+
+    # Overlay
+    if any(w in text for w in ["jasn", "light", "lekk"]):
+        effects["overlay"] = "light"
+    elif any(w in text for w in ["brak overlay", "bez overlay", "bez nakl", "none", "czyst"]):
+        effects["overlay"] = "none"
+    elif any(w in text for w in ["kinow", "cinem", "filmow", "vignet"]):
+        effects["overlay"] = "cinematic"
+    elif any(w in text for w in ["gradient", "kolorow"]):
+        effects["overlay"] = "gradient"
+
+    return effects
 
 
 @app.route("/cleanup", methods=["POST"])
