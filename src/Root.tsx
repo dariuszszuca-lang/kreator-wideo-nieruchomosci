@@ -74,7 +74,7 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1080}
         height={1920}
-        defaultProps={{ listing: LISTING }}
+        defaultProps={{ listing: LISTING, brand: { stylePreset: "luksusowy" } }}
       />
 
       {/* Wizualizacja dzialki 1:1 (17s) */}
@@ -96,7 +96,7 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1080}
         height={1080}
-        defaultProps={CAROUSEL_DEFAULT}
+        defaultProps={{ ...CAROUSEL_DEFAULT, brand: { stylePreset: "luksusowy" } }}
       />
 
       {/* Sprzedane! 1:1 (8s) */}
@@ -107,7 +107,7 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1080}
         height={1080}
-        defaultProps={SOLD_DEFAULT}
+        defaultProps={{ ...SOLD_DEFAULT, brand: { stylePreset: "luksusowy" } }}
       />
     </>
   );

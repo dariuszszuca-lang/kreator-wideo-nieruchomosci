@@ -387,10 +387,138 @@
 
     .error-msg.visible { display: block; }
 
+    /* --- STYLE PRESETS --- */
+    .style-presets {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .style-card {
+      background: rgba(255,255,255,0.04);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .style-card:hover {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .style-card.active {
+      border-color: var(--accent, #D4AF37);
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 15px rgba(255,255,255,0.05);
+    }
+
+    .style-card .swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+
+    .style-card .style-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      text-transform: capitalize;
+    }
+
+    /* --- LOGO UPLOAD --- */
+    .logo-upload-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .logo-preview {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .logo-preview .placeholder {
+      font-size: 24px;
+      opacity: 0.3;
+    }
+
+    .logo-upload-btn {
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .logo-upload-btn:hover {
+      background: rgba(255,255,255,0.12);
+      color: white;
+    }
+
+    .logo-remove {
+      font-size: 12px;
+      color: rgba(255,107,107,0.7);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    .logo-remove:hover { color: #ff6b6b; }
+
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #D4AF37;
+    }
+
+    textarea::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+
     @media (max-width: 600px) {
       .templates { grid-template-columns: 1fr; }
       .form-row { grid-template-columns: 1fr; }
       .photo-previews { grid-template-columns: repeat(3, 1fr); }
+      .style-presets { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
@@ -427,6 +555,65 @@
 
   <!-- FORM -->
   <form id="kreatorForm" onsubmit="return false;">
+
+    <!-- STYL WIZUALNY -->
+    <div class="form-section">
+      <h3>Styl wizualny</h3>
+      <div class="style-presets" id="stylePresets">
+        <div class="style-card active" data-style="luksusowy" onclick="selectStyle('luksusowy')">
+          <div class="swatch" style="background: linear-gradient(135deg, #D4AF37, #F5E6A3);"></div>
+          <div class="style-name">Luksusowy</div>
+        </div>
+        <div class="style-card" data-style="nowoczesny" onclick="selectStyle('nowoczesny')">
+          <div class="swatch" style="background: linear-gradient(135deg, #3B82F6, #93C5FD);"></div>
+          <div class="style-name">Nowoczesny</div>
+        </div>
+        <div class="style-card" data-style="elegancki" onclick="selectStyle('elegancki')">
+          <div class="swatch" style="background: linear-gradient(135deg, #C9A96E, #E8D5B0);"></div>
+          <div class="style-name">Elegancki</div>
+        </div>
+        <div class="style-card" data-style="minimalistyczny" onclick="selectStyle('minimalistyczny')">
+          <div class="swatch" style="background: linear-gradient(135deg, #FFFFFF, #A0A0A0);"></div>
+          <div class="style-name">Minimalistyczny</div>
+        </div>
+        <div class="style-card" data-style="naturalne" onclick="selectStyle('naturalne')">
+          <div class="swatch" style="background: linear-gradient(135deg, #7CB342, #AED581);"></div>
+          <div class="style-name">Naturalne</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANDING -->
+    <div class="form-section">
+      <h3>Branding</h3>
+      <div class="form-row">
+        <div>
+          <label>Naglowek (intro)</label>
+          <input type="text" id="headline" placeholder="np. NA SPRZEDAZ" value="NA SPRZEDAZ">
+        </div>
+        <div>
+          <label>Tekst CTA</label>
+          <input type="text" id="ctaText" placeholder="np. ZADZWON" value="ZADZWON">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Podtekst CTA</label>
+          <input type="text" id="ctaSubtext" placeholder="np. ZAINTERESOWANY?" value="ZAINTERESOWANY?">
+        </div>
+        <div>
+          <label>Logo agencji</label>
+          <div class="logo-upload-area">
+            <div class="logo-preview" id="logoPreview">
+              <span class="placeholder">🏢</span>
+            </div>
+            <button type="button" class="logo-upload-btn" onclick="document.getElementById('logoInput').click()">Wgraj logo</button>
+            <button type="button" class="logo-remove" id="logoRemoveBtn" onclick="removeLogo()" style="display:none">Usun</button>
+          </div>
+          <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleLogo(this.files)">
+        </div>
+      </div>
+    </div>
 
     <!-- DANE OFERTY -->
     <div class="form-section">
@@ -537,7 +724,9 @@
 
 <script>
   let currentTemplate = 'reel';
+  let currentStyle = 'luksusowy';
   let uploadedPhotos = [];
+  let logoPath = '';
   let sessionId = Math.random().toString(36).substring(2, 10);
 
   // --- TEMPLATE SELECTION ---
@@ -551,6 +740,41 @@
     document.getElementById('detailsRow').style.display = showDetails ? 'grid' : 'none';
     document.getElementById('detailsRow2').style.display = showDetails ? 'grid' : 'none';
     document.getElementById('featuresSection').style.display = showDetails ? 'block' : 'none';
+  }
+
+  // --- STYLE SELECTION ---
+  function selectStyle(style) {
+    currentStyle = style;
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-style="${style}"]`).classList.add('active');
+  }
+
+  // --- LOGO UPLOAD ---
+  function handleLogo(files) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    formData.append('logo', file);
+
+    fetch('/upload-logo', { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) { showError(data.error); return; }
+        logoPath = data.logoPath;
+        const preview = document.getElementById('logoPreview');
+        preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="logo">`;
+        document.getElementById('logoRemoveBtn').style.display = 'inline';
+      })
+      .catch(err => showError('Blad uploadu logo: ' + err.message));
+  }
+
+  function removeLogo() {
+    logoPath = '';
+    document.getElementById('logoPreview').innerHTML = '<span class="placeholder">🏢</span>';
+    document.getElementById('logoRemoveBtn').style.display = 'none';
+    document.getElementById('logoInput').value = '';
   }
 
   // --- FEATURES ---
@@ -670,6 +894,11 @@
         path: p.path,
         label: p.label || p.name.replace(/\.[^.]+$/, ''),
       })),
+      stylePreset: currentStyle,
+      headline: document.getElementById('headline').value,
+      ctaText: document.getElementById('ctaText').value,
+      ctaSubtext: document.getElementById('ctaSubtext').value,
+      logoPath: logoPath || undefined,
     };
 
     // UI state

@@ -47,6 +47,41 @@ def upload_photos():
     return jsonify({"session_id": session_id, "files": uploaded})
 
 
+def get_brand(data):
+    """Wyciągnij brand config z danych formularza"""
+    brand = {}
+    if data.get("stylePreset"):
+        brand["stylePreset"] = data["stylePreset"]
+    if data.get("headline"):
+        brand["headline"] = data["headline"]
+    if data.get("ctaText"):
+        brand["ctaText"] = data["ctaText"]
+    if data.get("ctaSubtext"):
+        brand["ctaSubtext"] = data["ctaSubtext"]
+    if data.get("logoPath"):
+        brand["logoSrc"] = data["logoPath"]
+    return brand if brand else None
+
+
+@app.route("/upload-logo", methods=["POST"])
+def upload_logo():
+    """Upload logo agencji"""
+    session_id = request.form.get("session_id", str(uuid.uuid4())[:8])
+    session_dir = UPLOADS_DIR / session_id
+    session_dir.mkdir(parents=True, exist_ok=True)
+
+    f = request.files.get("logo")
+    if not f or not f.filename:
+        return jsonify({"error": "Brak pliku logo"}), 400
+
+    safe_name = "logo_" + f.filename.replace(" ", "_")
+    save_path = session_dir / safe_name
+    f.save(str(save_path))
+    rel_path = f"uploads/{session_id}/{safe_name}"
+
+    return jsonify({"session_id": session_id, "logoPath": rel_path})
+
+
 @app.route("/render", methods=["POST"])
 def render_video():
     """Renderuj wideo lub karuzelę"""
@@ -82,6 +117,7 @@ def render_reel(data, render_id):
     while len(photos) < 5:
         photos.append(photos[-1].copy())
 
+    brand = get_brand(data)
     props = {
         "listing": {
             "title": data.get("title", "Oferta"),
@@ -95,8 +131,10 @@ def render_reel(data, render_id):
             "agent": data.get("agent", ""),
             "agentPhone": data.get("agentPhone", ""),
             "photos": [{"src": p["path"], "label": p.get("label", "")} for p in photos[:5]],
-        }
+        },
     }
+    if brand:
+        props["brand"] = brand
 
     props_file = OUT_DIR / f"{render_id}-props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False))
@@ -124,6 +162,7 @@ def render_carousel(data, render_id):
     slides = []
     total_slides = 2 + min(len(photos), 3) + 1  # cover + photos + details + cta
 
+    brand = get_brand(data)
     base_props = {
         "title": data.get("title", "Oferta"),
         "location": data.get("location", ""),
@@ -137,6 +176,8 @@ def render_carousel(data, render_id):
         "agentPhone": data.get("agentPhone", ""),
         "totalSlides": total_slides,
     }
+    if brand:
+        base_props["brand"] = brand
 
     slide_num = 1
 
@@ -221,6 +262,7 @@ def render_sold(data, render_id):
     if not photos:
         return jsonify({"error": "Dodaj przynajmniej 1 zdjęcie"}), 400
 
+    brand = get_brand(data)
     props = {
         "title": data.get("title", ""),
         "location": data.get("location", ""),
@@ -229,6 +271,8 @@ def render_sold(data, render_id):
         "agentPhone": data.get("agentPhone", ""),
         "photoSrc": photos[0]["path"],
     }
+    if brand:
+        props["brand"] = brand
 
     props_file = OUT_DIR / f"{render_id}-props.json"
     props_file.write_text(json.dumps(props, ensure_ascii=False))
